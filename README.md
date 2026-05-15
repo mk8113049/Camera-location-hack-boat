@@ -1,0 +1,1 @@
+# Camera-location-hack-boat
